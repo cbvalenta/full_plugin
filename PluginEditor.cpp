@@ -9,6 +9,70 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+void LookAndFeel::drawCustomRotarySlider(juce::Graphics g, int x, int y, int height, int width, float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider)
+{
+    auto bounds = juce::Rectangle<float>(x, y, width, height);
+    
+    if( auto* custSlider = dynamic_cast<CustomRotarySlider*>(&slider))
+    {
+        auto center = bounds.getCentre();
+        
+        juce::Path p;
+        
+        juce::Rectangle<float> r;
+        r.setLeft(center.getX() - 2);
+        r.setRight(center.getX() + 2);
+        r.setTop(bounds.getY());
+        r.setBottom(center.getY() - 14 * 1.5);
+        
+        p.addRoundedRectangle(r, 2.f);
+        
+        jassert(rotaryStartAngle < rotaryEndAngle);
+        
+        auto sliderAngRad = juce::jmap(sliderPosProportional, 0.f, 1.f, rotaryStartAngle, rotaryEndAngle);
+        
+        p.applyTransform(juce::AffineTransform().rotated(sliderAngRad, center.getX(), center.getY()));
+        
+        g.fillPath(p);
+        
+        r.setSize(12, 16);
+        r.setCentre(center);
+        
+        g.setColour(juce::Colours::black);
+        g.fillRect(r);
+        
+        g.setColour(juce::Colours::white);
+    }
+}
+
+void CustomRotarySlider::paint(juce::Graphics& g)
+{
+    auto startAng = juce::degreesToRadians(180.f + 45.f);
+    auto endAng = juce::degreesToRadians(180.f - 45.f) + juce::MathConstants<float>::twoPi;
+    
+    auto range = getRange();
+    
+    auto sliderBounds = getSliderBounds();
+    
+    getLookAndFeel().drawRotarySlider(g, sliderBounds.getX(), sliderBounds.getY(), sliderBounds.getHeight(), sliderBounds.getWidth(), juce::jmap(getValue(), range.getStart(), range.getEnd(), 0.0, 1.0), startAng, endAng, *this);
+}
+
+juce::Rectangle<int> CustomRotarySlider::getSliderBounds() const
+{
+    auto bounds = getLocalBounds();
+    
+    auto size = juce::jmin(bounds.getWidth(), bounds.getHeight());
+    
+    size -= 28;
+    
+    juce::Rectangle<int> r;
+    r.setSize(size, size);
+    r.setCentre(bounds.getCentreX() + 50, 0);
+    r.setY(2);
+    
+    return r;
+}
+
 //==============================================================================
 FullPluginAudioProcessorEditor::FullPluginAudioProcessorEditor (FullPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),

@@ -14,6 +14,31 @@
 //==============================================================================
 /**
 */
+struct LookAndFeel : juce::LookAndFeel_V4
+{
+    void drawCustomRotarySlider(juce::Graphics g, int x, int y, int height, int width, float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider);
+};
+
+struct CustomRotarySlider : juce::Slider
+{
+public:
+    CustomRotarySlider()
+    {
+        setLookAndFeel(&lnf);
+    }
+    
+    ~CustomRotarySlider()
+    {
+        setLookAndFeel(nullptr);
+    }
+    
+    void paint(juce::Graphics& g) override;
+    juce::Rectangle<int> getSliderBounds() const;
+    
+private:
+    LookAndFeel lnf;
+};
+
 class FullPluginAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
@@ -32,7 +57,7 @@ private:
     juce::Label waveformLabel, lfoFreqLabel, lfoControlLabel, filterSelectionLabel;
     
     juce::ComboBox waveformSelection, lfoControl, filterSelection;
-    juce::Slider lfoFreq;
+    CustomRotarySlider lfoFreq;
     
     juce::AudioProcessorValueTreeState::ComboBoxAttachment waveformSelectionAttachment, lfoControlAttachment, filterSelectionAttachment;
     juce::AudioProcessorValueTreeState::SliderAttachment lfoFreqAttachment;
